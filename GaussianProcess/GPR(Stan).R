@@ -208,14 +208,55 @@ ggplot(dat_g2, aes(x, y2_med))+
 # data2 #
 #-------#
 N=100
-x=runif(N,-5,5)
-y=sin(x)+rnorm(N,0,0.1)
+x=as.matrix(runif(N,-5,5))
+y=as.vector(sin(x)+rnorm(N,0,0.1))
 
 N2=50
-x2=seq(-7,7,length=N2)
+x2=as.matrix(seq(-10,10,length=N2))
 
 
 data=list(N=N,x=x,y=y,N2=N2,x2=x2,Kd=1)
+
+#----------#
+# analysis #
+#----------#
+
+fit=stan(model_code=stan_code,data=data,chain=3,iter=2000,warmup=500)
+
+#------#
+# plot #
+#------#
+A <- extract(fit)
+
+y2_med <- apply(A$y2, 2, median)
+y2_max <- apply(A$y2, 2, quantile, probs = 0.05)
+y2_min <- apply(A$y2, 2, quantile, probs = 0.95)
+
+dat_g <- data.frame(x2, y2_med, y2_max, y2_min)
+dat_g2 <- data.frame(x, y)
+
+ggplot(dat_g, aes(x2, y2_med))+
+  theme_classic()+
+  geom_ribbon(aes(ymax = y2_max, ymin = y2_min), alpha = 0.2)+
+  geom_line()+
+  geom_point(data = dat_g2, aes(x, y))+
+  xlab("x") + ylab("y")
+
+
+
+
+#-------#
+# data3 #
+#-------#
+N=100
+x=as.matrix(runif(N,-5,5))
+y=as.vector(sin(x)+rnorm(N,0,0.1))
+
+N2=50
+x2=as.matrix(seq(-10,10,length=N2))
+
+
+data=list(N=N,x=as.matrix(sin(x)),y=y,N2=N2,x2=as.matrix(sin(x2)),Kd=1)
 
 #----------#
 # analysis #
